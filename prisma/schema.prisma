@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL") // Uses connection string from .env
+}
+
+model User{
+  id    Int    @id
+  name  String
+  email String @unique
+  status String
+  password String
+  profilePicture Bytes?
+  role     String @default("user")
+
+  PasswordResetToken PasswordResetToken[]
+  createdAt  DateTime @default(now())
+
+  Notification Notification[]
+}
+
+model Admin{
+  id Int @id @default(autoincrement())
+  fullName String
+  email String @unique
+  password String
+  photo Bytes?
+  role      String @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+   PasswordResetTokens PasswordResetToken[]
+   
+}
+model PasswordResetToken {
+  id        String   @id @default(uuid()) 
+  token     String   @unique
+  expires   DateTime
+  userId    Int?     @unique  
+  adminId   Int?     @unique
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  admin     Admin?   @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  message   String
+  isRead    Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  // Relationship (assuming you have a User model)
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+
+
+
