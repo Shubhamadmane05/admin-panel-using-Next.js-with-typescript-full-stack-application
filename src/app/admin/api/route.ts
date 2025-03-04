@@ -37,8 +37,9 @@ export async function POST(req: Request) {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const photoFile = formData.get("photo") as File;
+    const department = formData.get("department") as string;
 
-    if (!fullName || !email || !password) {
+    if (!fullName || !email || !password || !department) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
@@ -70,6 +71,7 @@ export async function POST(req: Request) {
         password: hashedPassword,
         photo: buffer,
         role: "admin",
+        department,
       },
     });
 

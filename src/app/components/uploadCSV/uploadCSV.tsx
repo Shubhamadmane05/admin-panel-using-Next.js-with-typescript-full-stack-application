@@ -69,11 +69,12 @@ const CSVUpload = () => {
         method: "POST",
         body: formData,
         headers: {
-          Authorization: `Bearer ${session?.user?.accessToken}`, // Pass token
+          Authorization: `Bearer ${session?.user?.id}`, // Pass token
         },
       });
 
       const result = await response.json();
+      
 
       if (response.ok) {
         const duplicateCount = result.duplicates?.length || 0;

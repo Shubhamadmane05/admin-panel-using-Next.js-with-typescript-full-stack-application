@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
- import { notifyClients } from "@/app/polling/api/route";
-//import { notifyClients } from "@/app/lib/websockets/server";
+//  import { notifyClients } from "@/app/polling/api/route";
+import { notifyClients } from "@/app/lib/websockets/server";
 
 const prisma = new PrismaClient();
 
@@ -23,11 +23,12 @@ export async function POST(req: NextRequest) {
 
     const name = formData.get("name") as string;
     const email = formData.get("email") as string;
+    const department = formData.get("department") as string;
     const password = formData.get("password") as string;
     const status = formData.get("status") as string;
     const profilePicture = formData.get("profilePicture");
 
-    if (!name || !email || !status) {
+    if (!name || !email || !status || !department) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -70,13 +71,15 @@ export async function POST(req: NextRequest) {
         id: nextId, 
         name, 
         email, 
+        department,
         password: hashedPassword, 
         status, 
         role: "user", 
         profilePicture: buffer 
       },
     });
-    notifyClients({ id: newUser.id, name: newUser.name, email: newUser.email });
+        
+    notifyClients({ id: newUser.id, name: newUser.name, email: newUser.email, department:newUser.department });
 
     return NextResponse.json({ message: "User created successfully", user: newUser });
   } catch (error) {

@@ -20,6 +20,7 @@ model User{
   status String
   password String
   profilePicture Bytes?
+  department String?
   role     String @default("user")
 
   PasswordResetToken PasswordResetToken[]
@@ -34,10 +35,12 @@ model Admin{
   email String @unique
   password String
   photo Bytes?
+  department String?
   role      String @default("admin")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
    PasswordResetTokens PasswordResetToken[]
+   Notification Notification[]
    
 }
 model PasswordResetToken {
@@ -52,13 +55,15 @@ model PasswordResetToken {
 }
 model Notification {
   id        Int      @id @default(autoincrement())
-  userId    Int?
+  userId    Int?     @unique 
+  adminId   Int?     @unique
   message   String
   isRead    Boolean @default(false)
   createdAt DateTime @default(now())
-
+  department String
   // Relationship (assuming you have a User model)
   user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  admin     Admin?   @relation(fields: [adminId], references: [id], onDelete: Cascade)
 }
 
 

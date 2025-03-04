@@ -8,6 +8,7 @@ const UserRegister = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [department, setDepartment] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [status, setStatus] = useState("Inactive");
@@ -33,7 +34,7 @@ const UserRegister = () => {
     e.preventDefault();
     setMessage("");
 
-    if (!name || !email || !password || !confirmPassword || !profilePicture) {
+    if (!name || !email || !password || !confirmPassword || !profilePicture || !department) {
       setMessage("All fields are required!");
       return;
     }
@@ -51,6 +52,7 @@ const UserRegister = () => {
     const formData = new FormData();
     formData.append("name", name);
     formData.append("email", email);
+    formData.append("department", department);
     formData.append("password", password);
     formData.append("profilePicture", profilePicture);
     formData.append("status", status);
@@ -69,6 +71,7 @@ const UserRegister = () => {
 
         setName("");
         setEmail("");
+        setDepartment("");
         setPassword("");
         setConfirmPassword("");
         setProfilePicture(null);
@@ -112,6 +115,18 @@ const UserRegister = () => {
             className="w-full p-2 border rounded text-black"
             required
           />
+          <select
+            value={department}
+            onChange={(e) => setDepartment(e.target.value)}
+            className="w-full p-2 border rounded text-black bg-white"
+            required
+          >
+            <option value="" disabled hidden>Select Department</option>
+            <option value="ALL">ALL</option>
+            <option value="HR">HR</option>
+            <option value="IT">IT</option>
+          </select>
+
           <input
             type="password"
             placeholder="Password"
@@ -120,6 +135,7 @@ const UserRegister = () => {
             className="w-full p-2 border rounded text-black"
             required
           />
+
           <input
             type="password"
             placeholder="Confirm Password"

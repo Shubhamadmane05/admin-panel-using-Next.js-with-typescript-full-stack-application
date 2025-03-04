@@ -9,7 +9,7 @@ const DownloadCSV = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("users/download/api"); 
+      const response = await fetch("download/api"); 
       if (!response.ok) throw new Error("Failed to fetch users");
 
       const users = await response.json();

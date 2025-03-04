@@ -21,7 +21,8 @@ export async function GET() {
   });
 }
 
-export async function notifyClients(newUser: { id: number; name: string; email: string }) {
+        
+export async function notifyClients(newUser: { id: number; name: string; email: string, department: string }) {
   while (waitingClients.length > 0) {
     const client = waitingClients.shift();
     if (client) {

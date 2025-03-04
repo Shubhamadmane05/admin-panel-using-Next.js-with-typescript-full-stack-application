@@ -2,9 +2,14 @@ import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 export async function middleware(req: { nextUrl: { pathname: any; }; url: string | URL | undefined; }) {
+
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
   const { pathname } = req.nextUrl;
+
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.next(); 
+  }
 
   // If no token exists  redirect to login page
   if (!token) {
@@ -24,5 +29,5 @@ export async function middleware(req: { nextUrl: { pathname: any; }; url: string
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*","/notifications"  ,"/profile","/users/:path*"],
+  matcher: ["/dashboard/:path*","/dashboard/import","/dashboard/download","/notifications"  ,"/profile","/users/:path*"],
 };

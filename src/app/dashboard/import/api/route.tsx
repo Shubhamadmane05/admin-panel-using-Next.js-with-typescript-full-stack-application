@@ -1,4 +1,7 @@
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { PrismaClient } from "@prisma/client";
+import { getServerSession } from "next-auth";
+import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
@@ -73,6 +76,19 @@ const filterDuplicates = async (newData: any[]) => {
 
 export async function POST(req: Request) {
   try {
+
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    
+    console.log("Token in CSV API:", token); // Debugging
+
+    if (!token) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    // 🔹 Ensure only admins can import users
+    if (token.role !== "admin") {
+      return NextResponse.json({ message: "Forbidden: Only admins can import data" }, { status: 403 });
+    }
     const formData = await req.formData();
     const file = formData.get("file");
 

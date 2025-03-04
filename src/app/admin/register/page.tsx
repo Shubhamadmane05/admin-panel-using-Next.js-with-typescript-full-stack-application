@@ -12,6 +12,7 @@ const AdminForm = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
+  const [department, setDepartment] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const router = useRouter();
@@ -36,7 +37,7 @@ const AdminForm = () => {
     // Clear previous messages
     setMessage("");
 
-    if (!fullName || !email || !password || !confirmPassword || !photo) {
+    if (!fullName || !email || !password || !confirmPassword || !photo || !department) {
       setMessage("All fields are required!");
       return;
     }
@@ -56,6 +57,7 @@ const AdminForm = () => {
     formData.append("email", email);
     formData.append("password", password);
     formData.append("photo", photo);
+    formData.append("department", department);
 
     try {
       const response = await fetch("/admin/api", {
@@ -73,8 +75,10 @@ const AdminForm = () => {
         // Clear all fields and reset the form
         setFullName("");
         setEmail("");
+        setDepartment("");
         setPassword("");
         setConfirmPassword("");
+
         setPhoto(null);
         setPreview(null);
         setTimeout(() => {
@@ -135,6 +139,26 @@ const AdminForm = () => {
               className="absolute text-sm text-gray-500 left-2 top-1.5 peer-placeholder-shown:top-4 peer-placeholder-shown:text-gray-400 peer-focus:top-1.5 peer-focus:text-blue-600 transition-all"
             >
               Email
+            </label>
+          </div>
+          <div className="relative">
+            <select
+              id="department"
+              className="peer block w-full px-2.5 pt-5 pb-2.5 text-gray-900 border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent appearance-none"
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+              required
+            >
+              <option value="" disabled hidden></option>
+              <option value="ALL">ALL</option>
+              <option value="HR">HR</option>
+              <option value="IT">IT</option>
+            </select>
+            <label
+              htmlFor="department"
+              className="absolute text-sm text-gray-500 left-2 top-1.5 peer-placeholder-shown:top-4 peer-placeholder-shown:text-gray-400 peer-focus:top-1.5 peer-focus:text-blue-600 transition-all"
+            >
+              Department
             </label>
           </div>
 
