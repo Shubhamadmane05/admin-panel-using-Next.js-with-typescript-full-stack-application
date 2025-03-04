@@ -26,7 +26,7 @@ model User{
   PasswordResetToken PasswordResetToken[]
   createdAt  DateTime @default(now())
 
-  Notification Notification[]
+  
 }
 
 model Admin{
@@ -40,7 +40,7 @@ model Admin{
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
    PasswordResetTokens PasswordResetToken[]
-   Notification Notification[]
+ 
    
 }
 model PasswordResetToken {
@@ -55,16 +55,24 @@ model PasswordResetToken {
 }
 model Notification {
   id        Int      @id @default(autoincrement())
-  userId    Int?     @unique 
-  adminId   Int?     @unique
-  message   String
-  isRead    Boolean @default(false)
+  userId    Int
+  userName  String
+  userEmail String
+  userDepartment String
+  isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
-  department String
-  // Relationship (assuming you have a User model)
-  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  admin     Admin?   @relation(fields: [adminId], references: [id], onDelete: Cascade)
+   @@unique([userId, userDepartment])
 }
+
+model UserNotification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  updatedBy String   // Admin who made the changes
+  changes   Json     // Store profile updates as JSON
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
 
 
 

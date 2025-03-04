@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 //  import { notifyClients } from "@/app/polling/api/route";
-import { notifyClients } from "@/app/lib/websockets/server";
+import { notifyAdmin } from "@/app/lib/websockets/server";
 
 const prisma = new PrismaClient();
 
@@ -78,9 +78,94 @@ export async function POST(req: NextRequest) {
         profilePicture: buffer 
       },
     });
-        
-    notifyClients({ id: newUser.id, name: newUser.name, email: newUser.email, department:newUser.department });
+    
+    let adminsToNotify;
 
+    if (department === "ALL") {
+      adminsToNotify = await prisma.admin.findMany({
+        select: { id: true, department: true },
+      });
+    
+      await prisma.notification.upsert({
+        where: {
+          userId_userDepartment: {
+            userId: newUser.id,
+            userDepartment: newUser.department, 
+          },
+        },
+        update: {}, // If exists
+        create: {
+          userId: newUser.id,
+          userName: newUser.name,
+          userEmail: newUser.email,
+          userDepartment: newUser.department, 
+          isRead: false,
+        },
+      });
+    
+    
+      const uniqueDepartments = new Set(adminsToNotify.map(admin => admin.department));
+    
+  
+      for (const dept of uniqueDepartments) {
+        await prisma.notification.upsert({
+          where: {
+            userId_userDepartment: {
+              userId: newUser.id,
+              userDepartment: dept, 
+            },
+          },
+          update: {}, // If exists
+          create: {
+            userId: newUser.id,
+            userName: newUser.name,
+            userEmail: newUser.email,
+            userDepartment: newUser.department, 
+            isRead: false,
+          },
+        });
+      }
+    } else {
+      
+      adminsToNotify = await prisma.admin.findMany({
+        where: { department },
+        select: { id: true, department: true },
+      });
+    }
+    
+    // Avoid duplicate department notifications
+    const notifiedDepartments = new Set<string>();
+    
+    for (const admin of adminsToNotify) {
+      await notifyAdmin({
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        department: department === "ALL" ? "All Departments" : newUser.department,
+      });
+    
+      if (!notifiedDepartments.has(admin.department)) {
+        notifiedDepartments.add(admin.department);
+    
+        await prisma.notification.upsert({
+          where: {
+            userId_userDepartment: {
+              userId: newUser.id,
+              userDepartment: admin.department,
+            },
+          },
+          update: {},
+          create: {
+            userId: newUser.id,
+            userName: newUser.name,
+            userEmail: newUser.email,
+            userDepartment: newUser.department,
+            isRead: false,
+          },
+        });
+      }
+    }
+     
     return NextResponse.json({ message: "User created successfully", user: newUser });
   } catch (error) {
     

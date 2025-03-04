@@ -46,6 +46,7 @@ export const authOptions = {
           role,
           status: user.status, 
           accessToken: user.token,
+          department: user.department,
 
         };
       },
@@ -58,6 +59,7 @@ export const authOptions = {
         token.role = user.role;
         token.status = user.status; 
         token.name = user.name; 
+        token.department = user.department; 
         token.accessToken = user.accessToken;
         
       }
@@ -69,6 +71,7 @@ export const authOptions = {
         session.user.role = token.role;
         session.user.status = token.status;
         session.user.name = token.name; 
+        session.user.department = token.department; 
         session.user.accessToken = token.accessToken; 
       }
       return session;

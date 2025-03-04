@@ -1,45 +1,60 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { notifyUser } from "@/app/lib/websockets/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // Adjust path if needed
 
 const prisma = new PrismaClient();
 
-// Update user
-export async function PUT(req: NextRequest, { params }: { params: { userid: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const userId = parseInt(params.userid);
+    const userId = parseInt(params.id);
     if (isNaN(userId)) {
       return NextResponse.json({ message: "Invalid user ID" }, { status: 400 });
     }
 
     const body = await req.json();
+    const session = await getServerSession(authOptions); 
+
+    if (!session || !session.user) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const updatedBy = session.user.name || session.user.email; // Admin performing the update
 
     // Check if the user exists
     const existingUser = await prisma.user.findUnique({ where: { id: userId } });
-
     if (!existingUser) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    
-
+    // Check for email duplication
     const isEmailTaken = await prisma.user.findFirst({
       where: { email: body.email, id: { not: userId } },
     });
 
-    
     if (isEmailTaken) {
       return NextResponse.json({ message: "Email is already registered!" }, { status: 400 });
     }
 
+    // Capture only the modified fields
+    const changes: Record<string, any> = {};
+    if (body.name !== existingUser.name) changes.name = body.name;
+    if (body.email !== existingUser.email) changes.email = body.email;
+    if (body.status !== existingUser.status) changes.status = body.status;
+
     // Update user
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: {
-        name: body.name,
-        email: body.email,
-        status: body.status,
-      },
+      data: body,
     });
+
+    // Send WebSocket notification only if changes were made
+   // Send WebSocket notification only if changes were made
+if (Object.keys(changes).length > 0 && updatedBy && userId) {
+  notifyUser({ userId, updatedBy, changes });
+}
+
 
     return NextResponse.json(updatedUser, { status: 200 });
   } catch (error) {
@@ -50,6 +65,7 @@ export async function PUT(req: NextRequest, { params }: { params: { userid: stri
     );
   }
 }
+
 
 // Delete user
 export async function DELETE(req: NextRequest, { params }: { params: { userid: string } }) {

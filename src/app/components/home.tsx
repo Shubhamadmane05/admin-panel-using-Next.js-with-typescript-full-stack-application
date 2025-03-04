@@ -11,6 +11,7 @@ import PageSearchComponent from "./ui/pageSearchComp";
 import { useSession } from "next-auth/react";
 import Logout from "../logout";
 import Notification from "../notifications/userNotifications";
+import UserNotification from "../notifications/notifications";
 
 
 interface User {
@@ -63,7 +64,9 @@ const DashboardReadOnly = () => {
         <PageSearchComponent />
       </div> */}
       <div className="w-full flex justify-end items-center pt-4 pr-14 space-x-4">
-        {session?.user?.role === "admin" && <Notification />}
+      {session?.user?.role === "admin" && <Notification />}
+      {session?.user?.role === "user" && <UserNotification />}
+
         <Logout />
       </div>
 
